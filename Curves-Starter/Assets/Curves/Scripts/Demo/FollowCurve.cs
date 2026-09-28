@@ -25,6 +25,10 @@ public class FollowCurve : MonoBehaviour
         // Check: the follower faces along the curve, with no zero-direction warning.
         // Next: Slice 3.1 in Bezier/CubicBezierMath.cs. </> end of Slice 2
 
+        transform.position = curve.SamplePoint(t);
+        transform.forward = curve.SampleTangent(t);
+        curve.SampleTangent(t);
+        
         if (triggerReset)
         {
             triggerReset = false;

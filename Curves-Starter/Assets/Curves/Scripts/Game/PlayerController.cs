@@ -104,6 +104,22 @@ public class PlayerController : MonoBehaviour
         // The catch runs only after progress reaches 1.
         // Check: a stuck or mid-flight axe waits returnDuration, then snaps to the hand.
         // Next: Slice 5.4 below.
+        
+        float elapsedTime = 0f;
+        while (elapsedTime < returnDuration)
+        {
+            float t = elapsedTime / returnDuration;
+            
+            Vector3 p0 = start;
+            Vector3 p2 = axe.CatchPosition;
+            Vector3 p1 = (p0 + p2) * 0.5f + transform.right * bowAmount;
+            
+            axe.transform.position = QuadraticBezierMath.SamplePointBernstein(p0, p1, p2, t);
+            axe.transform.Rotate(Vector3.forward, axe.spinSpeed * Time.deltaTime, Space.Self);
+            
+            yield return null;
+            elapsedTime += Time.deltaTime;
+        }
 
         // TODO Slice 5.4: each frame, place the axe on the GetReturnControlPoints curve
         // at the recall progress. The basic curve can stay fixed for the whole recall.
@@ -116,7 +132,6 @@ public class PlayerController : MonoBehaviour
         // follow the moving hand.
         // Check: turn during recall. The axe still lands in the animated grip.
         // Next: open Demo, Slice 6.1 in Bezier/QuadraticBezierMath.cs.
-        yield return null;
 
         axe.AttachToHand();
         _axeState = AxeState.Held;

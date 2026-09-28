@@ -10,8 +10,8 @@ public class ThrownAxe : MonoBehaviour
 {
     public Rigidbody rigidbody;
     public Collider axeCollider;
-
-    bool _stuck;
+    public float spinSpeed = 1000f;
+    
     Transform _hand;
     Vector3 _heldLocalPosition;
     Quaternion _heldLocalRotation;
@@ -33,8 +33,11 @@ public class ThrownAxe : MonoBehaviour
         _heldLocalPosition = transform.localPosition;
         _heldLocalRotation = transform.localRotation;
         
+        Physics.IgnoreCollision(axeCollider, thrower);
+        
         transform.SetParent(null);
-        transform.position += direction * 0.5f;
+        transform.right = direction;
+        
         // TODO Slice 4.1: hand the detached axe to physics. Right now it hangs in the air.
         // 1. Let physics move it and let it collide with the world.
         // 2. Never let it collide with the thrower.
@@ -46,6 +49,12 @@ public class ThrownAxe : MonoBehaviour
         // TODO Slice 8.3 (launch hook): start visual spin.
         // Pair it with the contact hook below.
         // Check: a throw spins, and the spin stops once the axe sticks.
+        
+        rigidbody.isKinematic = false;
+        axeCollider.enabled = true;
+        
+        rigidbody.AddForce(direction * impulse, ForceMode.VelocityChange);
+        rigidbody.AddTorque(transform.forward * -(spinSpeed * Mathf.Deg2Rad), ForceMode.VelocityChange);
     }
 
     public void AttachToHand()
@@ -54,7 +63,7 @@ public class ThrownAxe : MonoBehaviour
         transform.SetLocalPositionAndRotation(_heldLocalPosition, _heldLocalRotation);
         rigidbody.isKinematic = true;
         axeCollider.enabled = false;
-        _stuck = false;
+
         // TODO Slice 8.3 (catch hook): stop the spin and restore the held look.
         // Check: throw and recall both spin. Two full cycles end with the original held look.
         // Next: polish, networking, and your showcase video. </> end of Slice 8
@@ -62,7 +71,7 @@ public class ThrownAxe : MonoBehaviour
 
     void OnCollisionEnter(Collision collision)
     {
-        if (_stuck) return;
+ 
 
         // TODO Slice 4.2: make the stick below apply only to your designated target.
         // Right now every first contact sticks, even the floor.
@@ -72,7 +81,7 @@ public class ThrownAxe : MonoBehaviour
         // Recall (still a snap) and catch work after both.
         // The Launch test and the four starting-green tests still pass.
         // Next: Slice 5.1 in PlayerController.GetReturnControlPoints. </> end of Slice 4
-        _stuck = true;
+
         rigidbody.isKinematic = true;
         // TODO Slice 8.3 (contact hook): stop visual spin while stuck.
     }
